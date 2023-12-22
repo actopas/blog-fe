@@ -1,12 +1,18 @@
+/*
+ * @Describle:
+ * @Author: sunmingyuan <fishmooger@gmail.com>
+ * @Date: 2023-12-21 19:15:43
+ * @LastEditors: sunmingyuan
+ * @LastEditTime: 2023-12-22 14:07:35
+ */
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
-
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
     data: API.CurrentUser;
-  }>('/api/currentUser', {
+  }>(`${baseUrl}/api/user/profile`, {
     method: 'GET',
     ...(options || {}),
   });
@@ -22,7 +28,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+  return request<API.LoginResult>(`${baseUrl}/api/user/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

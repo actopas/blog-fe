@@ -3,7 +3,7 @@
  * @Author: sunmingyuan <fishmooger@gmail.com>
  * @Date: 2023-12-21 19:15:43
  * @LastEditors: sunmingyuan
- * @LastEditTime: 2023-12-21 19:37:40
+ * @LastEditTime: 2023-12-22 16:46:16
  */
 export default {
   'pages.layouts.userLayout.title': ' ',
@@ -61,7 +61,7 @@ export default {
   'pages.searchTable.titleOption': '操作',
   'pages.searchTable.config': '配置',
   'pages.searchTable.subscribeAlert': '订阅警报',
-  'pages.searchTable.title': '查询表格',
+  'pages.searchTable.title': '文章',
   'pages.searchTable.new': '新建',
   'pages.searchTable.chosen': '已选择',
   'pages.searchTable.item': '项',

@@ -22,11 +22,13 @@ declare namespace API {
     address?: string;
     phone?: string;
   };
-
+  interface LoginResponseData {
+    token: string;
+    user: {};
+  }
   type LoginResult = {
-    status?: string;
-    type?: string;
-    currentAuthority?: string;
+    status?: number;
+    data: LoginResponseData;
   };
 
   type PageParams = {
@@ -62,7 +64,7 @@ declare namespace API {
   };
 
   type LoginParams = {
-    username?: string;
+    email?: string;
     password?: string;
     autoLogin?: boolean;
     type?: string;

@@ -1,13 +1,14 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
+import { queryLogin } from '@/services/user';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
 import { Alert, message } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
+import { useLocalStorageState } from 'ahooks';
 
 const Lang = () => {
   const langClassName = useEmotionCss(({ token }) => {
@@ -49,7 +50,20 @@ const LoginMessage: React.FC<{
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
   const { initialState, setInitialState } = useModel('@@initialState');
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setValue] = useLocalStorageState<
+    { token?: string; refresh_token?: string; expired_timestamp?: string } | undefined
+  >('access-info');
+  const handleChangeState = async ({
+    token,
+    expired_timestamp,
+  }: {
+    token: string;
+    expired_timestamp: string;
+  }) => {
+    setValue({ token, expired_timestamp });
+    // setInitialState({ token, expired_timestamp });
+  };
   const containerClassName = useEmotionCss(() => {
     return {
       display: 'flex',
@@ -76,14 +90,20 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: User.LoginParams) => {
     try {
       // 登录
-      const msg = await login({ ...values });
-      if (msg.status === 'ok') {
+      const res = await queryLogin({ ...values });
+      if (res.status === 200) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
+        });
+
+        const expiredTimestamp = new Date().getTime() + 86400000;
+        await handleChangeState({
+          token: `${res?.data?.token ?? ''}`,
+          expired_timestamp: `${expiredTimestamp}`,
         });
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();
@@ -91,9 +111,9 @@ const Login: React.FC = () => {
         history.push(urlParams.get('redirect') || '/');
         return;
       }
-      console.log(msg);
+      console.log(res);
       // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
+      setUserLoginState(res);
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
@@ -135,7 +155,7 @@ const Login: React.FC = () => {
             autoLogin: true,
           }}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            await handleSubmit(values as User.LoginParams);
           }}
         >
           {status === 'error' && (
@@ -148,7 +168,7 @@ const Login: React.FC = () => {
           )}
           <>
             <ProFormText
-              name="username"
+              name="email"
               fieldProps={{
                 size: 'large',
                 prefix: <UserOutlined />,
@@ -192,18 +212,6 @@ const Login: React.FC = () => {
               ]}
             />
           </>
-          <div>
-            <ProFormCheckbox noStyle name="autoLogin">
-              <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
-            </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-            >
-              <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
-            </a>
-          </div>
         </LoginForm>
       </div>
       <Footer />

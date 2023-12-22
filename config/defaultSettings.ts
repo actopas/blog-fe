@@ -1,3 +1,10 @@
+/*
+ * @Describle:
+ * @Author: sunmingyuan <fishmooger@gmail.com>
+ * @Date: 2023-12-21 19:15:43
+ * @LastEditors: sunmingyuan
+ * @LastEditTime: 2023-12-22 13:56:02
+ */
 import { ProLayoutProps } from '@ant-design/pro-components';
 
 /**
@@ -7,11 +14,12 @@ const Settings: ProLayoutProps & {
   pwa?: boolean;
   logo?: string;
 } = {
+  splitMenus: false,
   navTheme: 'light',
   // 拂晓蓝
-  colorPrimary: '#1890ff',
-  layout: 'mix',
-  contentWidth: 'Fluid',
+  colorPrimary: '#13C2C2',
+  layout: 'top',
+  contentWidth: 'Fixed',
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,

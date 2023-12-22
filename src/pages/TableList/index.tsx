@@ -1,4 +1,5 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
+import { removeRule, updateRule } from '@/services/ant-design-pro/api';
+import { createArticle, queryArticleList } from '@/services/blog';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -21,10 +22,10 @@ import UpdateForm from './components/UpdateForm';
  * @zh-CN 添加节点
  * @param fields
  */
-const handleAdd = async (fields: API.RuleListItem) => {
+const handleAdd = async (fields: Blog.createArticleParams) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({ ...fields });
+    await createArticle({ ...fields });
     hide();
     message.success('Added successfully');
     return true;
@@ -109,14 +110,8 @@ const TableList: React.FC = () => {
 
   const columns: ProColumns<API.RuleListItem>[] = [
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.updateForm.ruleName.nameLabel"
-          defaultMessage="Rule name"
-        />
-      ),
-      dataIndex: 'name',
-      tip: 'The rule name is the unique key',
+      title: '标题',
+      dataIndex: 'title',
       render: (dom, entity) => {
         return (
           <a
@@ -131,72 +126,28 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.searchTable.titleDesc" defaultMessage="Description" />,
-      dataIndex: 'desc',
-      valueType: 'textarea',
+      title: '作者',
+      dataIndex: 'author.username',
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleCallNo"
-          defaultMessage="Number of service calls"
-        />
-      ),
-      dataIndex: 'callNo',
-      sorter: true,
+      title: '摘要',
+      dataIndex: 'content',
       hideInForm: true,
-      renderText: (val: string) =>
-        `${val}${intl.formatMessage({
-          id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
-        })}`,
     },
     {
-      title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
-      dataIndex: 'status',
+      title: '标签',
+      dataIndex: 'tags',
       hideInForm: true,
-      valueEnum: {
-        0: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.default"
-              defaultMessage="Shut down"
-            />
-          ),
-          status: 'Default',
-        },
-        1: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.running" defaultMessage="Running" />
-          ),
-          status: 'Processing',
-        },
-        2: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.online" defaultMessage="Online" />
-          ),
-          status: 'Success',
-        },
-        3: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.abnormal"
-              defaultMessage="Abnormal"
-            />
-          ),
-          status: 'Error',
-        },
+      render: (tags) => {
+        return tags.map((tag) => {
+          return <span key={tag.id}>{tag.name}</span>;
+        });
       },
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleUpdatedAt"
-          defaultMessage="Last scheduled time"
-        />
-      ),
+      title: '创建时间',
       sorter: true,
-      dataIndex: 'updatedAt',
+      dataIndex: 'createdAt',
       valueType: 'dateTime',
       renderFormItem: (item, { defaultRender, ...rest }, form) => {
         const status = form.getFieldValue('status');
@@ -218,26 +169,8 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalOpen(true);
-            setCurrentRow(record);
-          }}
-        >
-          <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
-        </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          <FormattedMessage
-            id="pages.searchTable.subscribeAlert"
-            defaultMessage="Subscribe to alerts"
-          />
-        </a>,
-      ],
+      title: '更新时间',
+      dataIndex: 'updatedAt',
     },
   ];
 
@@ -264,7 +197,7 @@ const TableList: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={rule}
+        request={queryArticleList}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -312,15 +245,12 @@ const TableList: React.FC = () => {
         </FooterToolbar>
       )}
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
+        title="创建文章"
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
+          const success = await handleAdd(value as Blog.createArticleParams);
           if (success) {
             handleModalOpen(false);
             if (actionRef.current) {
@@ -342,9 +272,9 @@ const TableList: React.FC = () => {
             },
           ]}
           width="md"
-          name="name"
+          name="title"
         />
-        <ProFormTextArea width="md" name="desc" />
+        <ProFormTextArea width="md" name="content" />
       </ModalForm>
       <UpdateForm
         onSubmit={async (value) => {
